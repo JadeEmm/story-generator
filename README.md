@@ -10,5 +10,5 @@ To run this project locally:
 
 ## Features
 - CRUD operations for characters (name, description, personality).
-- Story generation using customizable text generation models.
+- Story generation using customizable text generation models from Hugging Face.
 - Evaluation of model performance with different parameters.

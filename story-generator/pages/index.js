@@ -1,3 +1,4 @@
+//his is your main landing page, where you add navigation to the Characters page.
 import Link from 'next/link';
 
 export default function Home() {
