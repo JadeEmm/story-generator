@@ -1,31 +1,32 @@
 // This file contains the backend logic for generating stories using GPT-based models. 
-import { Configuration, OpenAIApi } from 'openai';
+import { HfInference } from '@huggingface/inference';
 
-// Configure OpenAI API
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY, // Set your OpenAI API Key in the environment
-});
-const openai = new OpenAIApi(configuration);
+// Initialize Hugging Face API Client
+const hf = new HfInference(process.env.HUGGINGFACE_API_KEY); // Add your Hugging Face API Key to the .env.local file
 
 export default async function handler(req, res) {
-  // Extract the list of characters from the request body
   const { characters } = req.body;
 
-  // Prepare the prompt by listing all character names, descriptions, and personalities
+  // Combine the character details into a prompt
   const characterDetails = characters
     .map((char) => `${char.name}, a ${char.personality} person.`)
     .join(' ');
-
-  // Create the prompt for story generation
   const prompt = `Generate a story using the following characters: ${characterDetails}`;
 
-  // Use OpenAI to generate a story
-  const response = await openai.createCompletion({
-    model: 'text-davinci-003', // You can experiment with different models here
-    prompt,
-    max_tokens: 500,           // Limit on the length of the response
-  });
+  try {
+    // Use GPT-2 model hosted on Hugging Face
+    const response = await hf.textGeneration({
+      model: 'gpt2', // Model name on Hugging Face
+      inputs: prompt,
+      parameters: {
+        max_new_tokens: 200, // Control the length of generated text
+        temperature: 0.7, // Adjust randomness, lower is more focused output
+      },
+    });
 
-  // Send the generated story back to the client
-  res.status(200).json({ story: response.data.choices[0].text });
+    // Return generated story to the frontend
+    res.status(200).json({ story: response.generated_text });
+  } catch (error) {
+    res.status(500).json({ error: 'Error generating story' });
+  }
 }
